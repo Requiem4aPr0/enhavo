@@ -1,0 +1,105 @@
+services:
+    Enhavo\Bundle\NewsletterBundle\Batch\SendBatchType:
+        arguments:
+            - '@enhavo_newsletter.manager'
+        tags:
+            - { name: enhavo_app.batch }
+
+    Enhavo\Bundle\NewsletterBundle\Batch\SendTestBatchType:
+        arguments:
+            - '@enhavo_newsletter.manager'
+            - '@request_stack'
+            - '@translator'
+            - '@form.factory'
+        tags:
+            - { name: enhavo_app.batch }
+
+    enhavo_newsletter.manager:
+        public: true
+        alias: Enhavo\Bundle\NewsletterBundle\Newsletter\NewsletterManager
+
+    Enhavo\Bundle\NewsletterBundle\Newsletter\NewsletterManager:
+        public: true
+        class: Enhavo\Bundle\NewsletterBundle\Newsletter\NewsletterManager
+        arguments:
+          - '@doctrine.orm.entity_manager'
+          - '@mailer'
+          - '%enhavo_newsletter.newsletter.mail.from%'
+          - '@enhavo_app.util.secure_url_token_generator'
+          - '@logger'
+          - '@enhavo_newsletter.newsletter.provider'
+          - '@Enhavo\Bundle\NewsletterBundle\Newsletter\NewsletterRenderer'
+
+    Enhavo\Bundle\NewsletterBundle\Newsletter\NewsletterRenderer:
+        arguments:
+            - '@twig'
+            - '@enhavo_app.template.manager'
+            - '@Enhavo\Bundle\NewsletterBundle\Newsletter\ParameterParser'
+            - '%enhavo_newsletter.newsletter.templates%'
+
+    Enhavo\Bundle\NewsletterBundle\Newsletter\ParameterParser:
+
+    Enhavo\Bundle\NewsletterBundle\Form\Type\NewsletterType:
+        arguments:
+            - '%enhavo_newsletter.model.newsletter.class%'
+            - '%enhavo_newsletter.newsletter.templates%'
+            - '@translator'
+        tags:
+            - { name: form.type, alias: enhavo_newsletter_newsletter }
+
+    Enhavo\Bundle\NewsletterBundle\Menu\NewsletterMenu:
+        parent: Enhavo\Bundle\AppBundle\Menu\Menu\BaseMenu
+        tags:
+            - { name: enhavo.menu, alias: newsletter_newsletter }
+
+    enhavo_newsletter.extend_listener.newsletter:
+        class: Enhavo\Bundle\AppBundle\EventListener\DoctrineExtendListener
+        arguments:
+            - Enhavo\Bundle\NewsletterBundle\Entity\Newsletter
+            - '%enhavo_newsletter.model.newsletter.class%'
+            - true
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    enhavo_newsletter.extend_listener.subscriber:
+        class: Enhavo\Bundle\AppBundle\EventListener\DoctrineExtendListener
+        arguments:
+            - Enhavo\Bundle\NewsletterBundle\Entity\Subscriber
+            - '%enhavo_newsletter.model.newsletter.class%'
+            - true
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    enhavo_newsletter.extend_listener.group:
+        class: Enhavo\Bundle\AppBundle\EventListener\DoctrineExtendListener
+        arguments:
+            - Enhavo\Bundle\NewsletterBundle\Entity\Group
+            - '%enhavo_newsletter.model.newsletter.class%'
+            - true
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    Enhavo\Bundle\NewsletterBundle\Command\SendNewsletterCommand:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@logger'
+        calls:
+            - [setContainer, ['@service_container']]
+        tags:
+            - { name: console.command, command: 'enhavo:newsletter:send' }
+
+    Enhavo\Bundle\NewsletterBundle\Provider\SubscriberProvider:
+
+    Enhavo\Bundle\NewsletterBundle\Column\NewsletterStateColumnType:
+        public: true
+        tags:
+            - { name: enhavo.column, alias: 'newsletter_state' }
+        calls:
+            - [setContainer, ['@service_container']]
+
+    enhavo_newsletter.factory.newsletter:
+        public: true
+        class: '%enhavo_newsletter.factory.newsletter.class%'
+        arguments:
+            - '%enhavo_newsletter.model.newsletter.class%'
+            - '@enhavo_block.factory.node'

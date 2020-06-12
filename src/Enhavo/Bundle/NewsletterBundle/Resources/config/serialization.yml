@@ -1,4 +1,0 @@
-Enhavo\Bundle\NewsletterBundle\Entity\Newsletter:
-    attributes:
-        id:
-            groups: ['form']

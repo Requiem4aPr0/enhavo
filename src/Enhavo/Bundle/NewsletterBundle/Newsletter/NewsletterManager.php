@@ -3,18 +3,14 @@
 
 namespace Enhavo\Bundle\NewsletterBundle\Newsletter;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use Enhavo\Bundle\AppBundle\Util\TokenGeneratorInterface;
 use Enhavo\Bundle\MediaBundle\Model\FileInterface;
-use Enhavo\Bundle\NewsletterBundle\Entity\Newsletter;
 use Enhavo\Bundle\NewsletterBundle\Exception\SendException;
 use Enhavo\Bundle\NewsletterBundle\Model\NewsletterInterface;
 use Enhavo\Bundle\NewsletterBundle\Provider\ProviderInterface;
-use FOS\UserBundle\Util\TokenGeneratorInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Enhavo\Bundle\NewsletterBundle\Entity\Receiver;
-use Enhavo\Bundle\AppBundle\Util\SecureUrlTokenGenerator;
 
 /**
  * NewsletterManager.php
@@ -24,8 +20,6 @@ use Enhavo\Bundle\AppBundle\Util\SecureUrlTokenGenerator;
  */
 class NewsletterManager
 {
-    use ContainerAwareTrait;
-
     /**
      * @var \Swift_Mailer
      */
@@ -40,11 +34,6 @@ class NewsletterManager
      * @var string
      */
     private $from;
-
-    /**
-     * @var array
-     */
-    private $templates;
 
     /**
      * @var TokenGeneratorInterface
@@ -62,28 +51,26 @@ class NewsletterManager
     private $provider;
 
     /**
-     * @var ParameterParserInterface
+     * @var NewsletterRenderer
      */
-    private $parameterParser;
+    private $renderer;
 
     public function __construct(
         EntityManagerInterface $em,
         \Swift_Mailer $mailer,
         $from,
-        $templates,
-        SecureUrlTokenGenerator $tokenGenerator,
+        TokenGeneratorInterface $tokenGenerator,
         LoggerInterface $logger,
         ProviderInterface $provider,
-        ParameterParserInterface $parameterParser
+        NewsletterRenderer $renderer
     ) {
         $this->em = $em;
         $this->mailer = $mailer;
-        $this->templates = $templates;
         $this->from = $from;
         $this->tokenGenerator = $tokenGenerator;
         $this->logger = $logger;
         $this->provider = $provider;
-        $this->parameterParser = $parameterParser;
+        $this->renderer = $renderer;
     }
 
     /**
@@ -166,9 +153,8 @@ class NewsletterManager
             ->setContentType("text/html")
             ->setFrom($this->from)
             ->setTo($receiver->getEmail())
-            ->setBody($this->render($receiver->getNewsletter(), $receiver->getParameters()));
+            ->setBody($this->render($receiver));
 
-        $newsletter = $receiver->getNewsletter();
         if (!empty($receiver->getNewsletter()->getAttachments())) {
             $this->addAttachmentsToMessage($receiver->getNewsletter()->getAttachments(), $message);
         }
@@ -176,21 +162,18 @@ class NewsletterManager
         return $this->mailer->send($message);
     }
 
-    public function sendTest(NewsletterInterface $newsletter, string $email)
+    public function sendTest(NewsletterInterface $newsletter, string $email): bool
     {
-        $message = new \Swift_Message();
-        $message
-            ->setSubject($newsletter->getSubject())
-            ->setContentType("text/html")
-            ->setFrom($this->from)
-            ->setTo($email)
-            ->setBody($this->render($newsletter, $this->provider->getTestParameters()));
-
-        if (!empty($newsletter->getAttachments())) {
-            $this->addAttachmentsToMessage($newsletter->getAttachments(), $message);
+        $return = true;
+        $receivers = $this->provider->getTestReceivers($newsletter);
+        foreach($receivers as $receiver) {
+            $receiver->setEmail($email);
+            $success = $this->sendNewsletter($receiver);
+            if(!$success) {
+                $return = false;
+            }
         }
-
-        return $this->mailer->send($message);
+        return $return;
     }
 
     private function addAttachmentsToMessage($attachments, \Swift_Message $message) {
@@ -199,40 +182,19 @@ class NewsletterManager
             $attach = new \Swift_Attachment();
             $attach->setFilename($attachment->getFilename());
             $attach->setContentType($attachment->getMimeType());
-            $attach->setBody($attachment);
+            $attach->setBody($attachment->getContent()->getContent());
             $message->attach($attach);
         }
     }
 
-    public function getTestParameters()
+    public function renderPreview(NewsletterInterface $newsletter)
     {
-        return $this->provider->getTestParameters();
+        $receivers = $this->provider->getTestReceivers($newsletter);
+        return $this->render($receivers[0]);
     }
 
-    public function render(NewsletterInterface $newsletter, array $parameters = [])
+    public function render(Receiver $receiver)
     {
-        $templateManager = $this->container->get('enhavo_app.template.manager');
-        $template = $this->getTemplate($newsletter->getTemplate());
-        $content = $this->container->get('twig')->render($templateManager->getTemplate($template), [
-            'resource' => $newsletter,
-            'newsletter' => $newsletter,
-            'parameters' => $parameters
-        ]);
-
-        $content = $this->parameterParser->parse($content, $parameters);
-
-        return $content;
-    }
-
-    private function getTemplate(?string $key): string
-    {
-        if($key === null) {
-            if(count($this->templates) === 1) {
-                $key = array_keys($this->templates)[0];
-                return $this->templates[$key]['template'];
-            }
-            throw new \Exception(sprintf('No template found for key "%s"', $key));
-        }
-        return $this->templates[$key]['template'];
+        return $this->renderer->render($receiver);
     }
 }
