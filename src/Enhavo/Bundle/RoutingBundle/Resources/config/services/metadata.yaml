@@ -1,0 +1,23 @@
+services:
+    Enhavo\Component\Metadata\MetadataRepository[Routing]:
+        class: Enhavo\Component\Metadata\MetadataRepository
+        arguments:
+            - '@Enhavo\Component\Metadata\MetadataFactory[Routing]'
+
+    Enhavo\Component\Metadata\MetadataFactory[Routing]:
+        class: Enhavo\Component\Metadata\MetadataFactory
+        arguments:
+            - 'Enhavo\Bundle\RoutingBundle\Metadata\Metadata'
+        calls:
+            - [addDriver, ['@Enhavo\Component\Metadata\Driver\ConfigurationDriver[Routing]']]
+            - [addProvider, ['@Enhavo\Bundle\RoutingBundle\Metadata\Provider\GeneratorProvider']]
+            - [addProvider, ['@Enhavo\Bundle\RoutingBundle\Metadata\Provider\RouterProvider']]
+
+    Enhavo\Component\Metadata\Driver\ConfigurationDriver[Routing]:
+        class: Enhavo\Component\Metadata\Driver\ConfigurationDriver
+        arguments:
+            - '%enhavo_routing.classes%'
+
+    Enhavo\Bundle\RoutingBundle\Metadata\Provider\GeneratorProvider:
+
+    Enhavo\Bundle\RoutingBundle\Metadata\Provider\RouterProvider:

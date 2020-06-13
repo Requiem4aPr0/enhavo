@@ -1,0 +1,19 @@
+services:
+    enhavo_search.engine.elastic_search_engine:
+        class: Enhavo\Bundle\SearchBundle\Engine\ElasticSearch\ElasticSearchEngine
+        public: true
+        arguments:
+            - '@enhavo_search.indexer.indexer'
+            - '@Enhavo\Component\Metadata\MetadataRepository[Search]'
+            - '@doctrine.orm.entity_manager'
+            - '@enhavo_search.elastica.client'
+            - '@enhavo_search.extractor.extractor'
+            - '@enhavo_search.filter.filter_data'
+            - '%enhavo_search.index.class%'
+
+    enhavo_search.elastica.client:
+        class: Elastica\Client
+        arguments:
+          -
+            host: '%enhavo_search.elastica.host%'
+            port: '%enhavo_search.elastica.port%'

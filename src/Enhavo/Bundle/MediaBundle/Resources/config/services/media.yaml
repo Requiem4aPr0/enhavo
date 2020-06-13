@@ -1,0 +1,206 @@
+parameters:
+    enhavo_media.file_storage_path: '%kernel.project_dir%/var/media'
+
+services:
+    enhavo_media.form.file:
+        class: Enhavo\Bundle\MediaBundle\Form\Type\FileType
+        arguments:
+            - '@form.factory'
+            - '@enhavo_media.repository.file'
+            - '@enhavo_media.extension_manager'
+        tags:
+            - { name: form.type, alias: enhavo_file }
+
+    Enhavo\Bundle\MediaBundle\Form\Type\LibraryFileType:
+        arguments:
+            - '%enhavo_media.model.file.class%'
+            - '@enhavo_media.media.public_url_generator'
+        tags:
+            - { name: form.type }
+
+    enhavo_media.form.media:
+        class: Enhavo\Bundle\MediaBundle\Form\Type\MediaType
+        arguments:
+            - '@enhavo_media.extension_manager'
+        tags:
+            - { name: form.type, alias: enhavo_media }
+
+    enhavo_media.form.extension.image_cropper:
+        class: Enhavo\Bundle\MediaBundle\Form\Extension\ImageCropperMediaExtension
+        tags:
+            - { name: form.type_extension, extended_type: Enhavo\Bundle\MediaBundle\Form\Type\MediaType }
+
+    enhavo_media.form.extension.media:
+        class: Enhavo\Bundle\MediaBundle\Form\Extension\MediaExtension
+        arguments:
+            - '%enhavo_media.form%'
+        tags:
+            - { name: form.type_extension, extended_type: Enhavo\Bundle\MediaBundle\Form\Type\MediaType }
+
+    enhavo_media.media.media_manager:
+        public: true
+        class: Enhavo\Bundle\MediaBundle\Media\MediaManager
+        arguments:
+            - '@enhavo_media.media.format_manager'
+            - '@enhavo_media.storage'
+            - '@enhavo_media.repository.file'
+            - '@doctrine.orm.entity_manager'
+            - '@enhavo_media.provider'
+            - '@enhavo_app.util.doctrine_reference_finder'
+
+    enhavo_media.media.format_manager:
+        class: Enhavo\Bundle\MediaBundle\Media\FormatManager
+        public: true
+        arguments:
+            - '%enhavo_media.formats%'
+            - '@enhavo_media.storage'
+            - '@enhavo_media.repository.format'
+            - '@enhavo_media.factory.format'
+            - '@enhavo_media.filter_collector'
+            - '@doctrine.orm.entity_manager'
+            - '@enhavo_media.provider'
+            - '@enhavo_media.cache'
+
+    enhavo_media.media.image_cropper_manager:
+        class: Enhavo\Bundle\MediaBundle\Media\ImageCropperManager
+        arguments:
+            - '%enhavo_media.formats%'
+
+    enhavo_media.storage.local_file_storage:
+        class: Enhavo\Bundle\MediaBundle\Storage\LocalFileStorage
+        arguments:
+            - '%enhavo_media.file_storage_path%'
+            - '@filesystem'
+
+    enhavo_media.provider.default_provider:
+        class: Enhavo\Bundle\MediaBundle\Provider\DefaultProvider
+        arguments:
+            - '@enhavo_app.util.secure_url_token_generator'
+            - '@enhavo_media.repository.file'
+
+    enhavo_media.twig.media_extension:
+        class: Enhavo\Bundle\MediaBundle\Twig\MediaExtension
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@enhavo_media.media.public_url_generator'
+        calls:
+            - [setContainer, ['@service_container']]
+        tags:
+            - { name: twig.extension }
+
+    Enhavo\Bundle\MediaBundle\EventListener\LifecycleListener:
+        arguments:
+            - '@enhavo_media.media.media_manager'
+        tags:
+            - { name: kernel.event_listener, event: enhavo_app.create, method: collectGarbage }
+            - { name: kernel.event_listener, event: enhavo_app.update, method: collectGarbage }
+
+    enhavo_media.listener.doctrine_subscriber:
+        class: Enhavo\Bundle\MediaBundle\EventListener\DoctrineSubscriber
+        arguments:
+            - '@enhavo_media.storage'
+            - '@enhavo_media.media.format_manager'
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    Enhavo\Bundle\MediaBundle\Column\MediaColumn:
+        public: true
+        calls:
+            - [setContainer, ['@service_container']]
+        tags:
+            - { name: enhavo.column, alias: media }
+
+    enhavo_media.factory.file:
+        class: Enhavo\Bundle\MediaBundle\Factory\FileFactory
+        public: true
+        arguments:
+            - '%enhavo_media.model.file.class%'
+            - '@enhavo_media.provider'
+
+    enhavo_media.factory.format:
+        class: Enhavo\Bundle\MediaBundle\Factory\FormatFactory
+        arguments:
+            - '%enhavo_media.model.format.class%'
+
+    enhavo_media.controller.upload:
+        public: true
+        class: Enhavo\Bundle\MediaBundle\Controller\UploadController
+        arguments:
+            - '@enhavo_media.factory.file'
+            - '@enhavo_media.factory.format'
+            - '@enhavo_media.media.media_manager'
+        calls:
+            - [setContainer, ['@service_container']]
+
+    enhavo_media.controller.image_cropper:
+        public: true
+        class: Enhavo\Bundle\MediaBundle\Controller\ImageCropperController
+        arguments:
+            - '@enhavo_media.media.image_cropper_manager'
+            - '@enhavo_media.media.media_manager'
+            - '@view.factory'
+            - '@fos_rest.view_handler'
+        calls:
+            - [setContainer, ['@service_container']]
+
+    Enhavo\Bundle\MediaBundle\Viewer\ImageCropperViewer:
+        public: true
+        arguments:
+            - '@enhavo_app.action_manager'
+            - '@session.flash_bag'
+            - '@enhavo_media.media.image_cropper_manager'
+            - '@enhavo_media.media.media_manager'
+            - '@enhavo_media.media.private_url_generator'
+        calls:
+            - ['setContainer', ['@service_container']]
+        tags:
+            - { name: enhavo.viewer, alias: image_cropper }
+
+    Enhavo\Bundle\MediaBundle\Viewer\MediaLibraryViewer:
+        public: true
+        arguments:
+            - '@enhavo_app.action_manager'
+            - '@session.flash_bag'
+        calls:
+            - ['setContainer', ['@service_container']]
+        tags:
+            - { name: enhavo.viewer, alias: media_library }
+
+    enhavo_media.security.default_authorization_checker:
+        public: true
+        class: Enhavo\Bundle\MediaBundle\Security\DefaultAuthorizationChecker
+
+    enhavo_media.media.public_url_generator:
+        class: Enhavo\Bundle\MediaBundle\Media\PublicUrlGenerator
+        public: true
+        arguments:
+            - '@enhavo_media.media.media_manager'
+            - '@router'
+
+    enhavo_media.media.private_url_generator:
+        class: Enhavo\Bundle\MediaBundle\Media\PrivateUrlGenerator
+        public: true
+        arguments:
+            - '@enhavo_media.media.media_manager'
+            - '@router'
+
+    Enhavo\Bundle\MediaBundle\Menu\LibraryMenu:
+        parent: Enhavo\Bundle\AppBundle\Menu\Menu\BaseMenu
+        tags:
+            - { name: enhavo.menu, alias: 'media_library' }
+
+    enhavo_media.controller.library:
+        parent: Enhavo\Bundle\AppBundle\Controller\AbstractViewController
+        class: Enhavo\Bundle\MediaBundle\Controller\LibraryController
+        public: true
+        calls:
+            - [setContainer, ['@service_container']]
+
+    Enhavo\Bundle\MediaBundle\Cache\HttpCache:
+        arguments:
+            - '@request_stack'
+        calls:
+            - [setUrlGenerator, ['@enhavo_media.media.public_url_generator']]
+
+    Enhavo\Bundle\MediaBundle\Cache\NoCache:
+

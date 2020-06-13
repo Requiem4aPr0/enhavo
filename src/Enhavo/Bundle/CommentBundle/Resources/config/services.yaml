@@ -1,0 +1,99 @@
+services:
+    Enhavo\Bundle\CommentBundle\Form\Type\CommentType:
+        arguments:
+            - '%enhavo_comment.model.comment.class%'
+        tags:
+            { name: form.type }
+
+    Enhavo\Bundle\CommentBundle\Form\Type\CommentSubmitType:
+        arguments:
+            - '%enhavo_comment.model.comment.class%'
+            - '%enhavo_comment.submit_form.validation_groups%'
+        tags:
+            { name: form.type }
+
+    Enhavo\Bundle\CommentBundle\Form\Type\ThreadType:
+        arguments:
+            - '%enhavo_comment.model.thread.class%'
+        tags:
+            { name: form.type }
+
+    Enhavo\Bundle\CommentBundle\Block\CommentBlockType:
+        public: true
+        calls:
+            - [setContainer, ['@service_container']]
+        tags:
+            - { name: enhavo.block, alias: comment }
+
+    Enhavo\Bundle\CommentBundle\Widget\CommentsWidgetType:
+        public: true
+        calls:
+            - [setContainer, ['@service_container']]
+        arguments:
+            - '@enhavo_comment.repository.comment'
+            - '@request_stack'
+            - '@Enhavo\Bundle\CommentBundle\Comment\CommentManager'
+        tags:
+            - { name: enhavo.widget, alias: comments }
+
+    Enhavo\Bundle\CommentBundle\Comment\CommentManager:
+        arguments:
+            - '@enhavo_comment.factory.comment'
+            - '@doctrine.orm.entity_manager'
+            - '@form.factory'
+            - '%enhavo_comment.submit_form.form%'
+            - '@enhavo_comment.factory.comment'
+            - '@event_dispatcher'
+
+    Enhavo\Bundle\CommentBundle\EventListener\PublishStrategySubscriber:
+        arguments:
+            - '@enhavo_comment.publish_strategy'
+            - '%enhavo_comment.publish_strategy.options%'
+            - '@event_dispatcher'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    Enhavo\Bundle\CommentBundle\Comment\Strategy\ImmediatelyPublishStrategy:
+        arguments:
+            - '@Enhavo\Bundle\CommentBundle\Comment\CommentManager'
+
+    Enhavo\Bundle\CommentBundle\Comment\Strategy\ConfirmStrategy:
+        arguments:
+            - '@mailer'
+            - '@twig'
+            - '@enhavo_app.template.manager'
+            - '@translator'
+            - '@enhavo_comment.repository.comment'
+
+    Enhavo\Bundle\CommentBundle\Action\CommentsActionType:
+        public: true
+        arguments:
+            - '@Symfony\Contracts\Translation\TranslatorInterface'
+            - '@Symfony\Component\Routing\RouterInterface'
+        tags:
+            - { name: enhavo.action, alias: 'comments' }
+
+    enhavo_comment.factory.comment:
+        class: '%enhavo_comment.factory.comment.class%'
+        arguments:
+            - '%enhavo_comment.model.comment.class%'
+        calls:
+            - [setThreadRepository, ['@enhavo_comment.repository.thread']]
+
+    Enhavo\Bundle\CommentBundle\Comment\AdminConfirmUrlGenerator:
+        arguments:
+            - '@router'
+            - '@enhavo_routing.router'
+
+    Enhavo\Bundle\CommentBundle\Twig\CommentTwigExtension:
+        arguments:
+            - '@Enhavo\Bundle\CommentBundle\Comment\AdminConfirmUrlGenerator'
+        tags:
+            - { name: twig.extension }
+
+    Enhavo\Bundle\CommentBundle\Column\CommentStateColumnType:
+        public: true
+        tags:
+            - { name: enhavo.column, alias: 'comment_state' }
+        calls:
+            - [setContainer, ['@service_container']]

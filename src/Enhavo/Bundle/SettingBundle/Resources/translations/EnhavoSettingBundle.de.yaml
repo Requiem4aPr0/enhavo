@@ -1,0 +1,18 @@
+label:
+  setting: 'Einstellungen'
+  index: 'Index'
+
+setting:
+  role:
+    label:
+      index: 'Einstellungen anzeigen'
+      update: 'Einstellungen bearbeiten'
+  label:
+    key: 'Schlüssel'
+    type: 'Typ'
+    label: 'Name'
+    value: 'Wert'
+    file: 'Datei'
+    files: 'Dateien'
+    setting: 'Einstellung'
+    date: 'Datum'

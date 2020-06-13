@@ -1,0 +1,43 @@
+enhavo_app:
+    template_paths:
+        enhavo_navigation:
+            path: '@EnhavoNavigationBundle/Resources/views'
+            priority: 10
+    roles:
+        enhavo_navigation_navigation_index:
+            role: ROLE_ENHAVO_NAVIGATION_NAVIGATION_INDEX
+            label: navigation.role.label.index
+            translation_domain: EnhavoNavigationBundle
+        enhavo_navigation_navigation_create:
+            role: ROLE_ENHAVO_NAVIGATION_NAVIGATION_CREATE
+            label: navigation.role.label.create
+            translation_domain: EnhavoNavigationBundle
+        enhavo_navigation_navigation_update:
+            role: ROLE_ENHAVO_NAVIGATION_NAVIGATION_UPDATE
+            label: navigation.role.label.update
+            translation_domain: EnhavoNavigationBundle
+        enhavo_navigation_navigation_delete:
+            role: ROLE_ENHAVO_NAVIGATION_NAVIGATION_DELETE
+            label: navigation.role.label.delete
+            translation_domain: EnhavoNavigationBundle
+
+doctrine:
+    orm:
+        resolve_target_entities:
+            Enhavo\Bundle\NavigationBundle\Model\NodeInterface: Enhavo\Bundle\NavigationBundle\Entity\Node
+            Enhavo\Bundle\NavigationBundle\Model\NavigationInterface: Enhavo\Bundle\NavigationBundle\Entity\Navigation
+
+enhavo_navigation:
+    items:
+        submenu:
+            type: submenu
+        link:
+            type: link
+
+enhavo_doctrine_extension:
+    metadata:
+        Enhavo\Bundle\NavigationBundle\Entity\Node:
+            reference:
+                node:
+                    idField: contentId
+                    nameField: contentClass

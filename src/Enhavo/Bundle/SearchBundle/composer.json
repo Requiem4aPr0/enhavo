@@ -1,6 +1,6 @@
 {
   "name": "enhavo/search-bundle",
-  "type": "library",
+  "type": "symfony-bundle",
   "description": "EnhavoSearchBundle",
   "keywords": ["framework"],
   "homepage": "https://enhavo.com",
@@ -14,6 +14,8 @@
   "require": {
     "php": "^7.2",
     "enhavo/app-bundle": "dev-master",
+    "enhavo/doctrine-extension-bundle": "dev-master",
+    "enhavo/metadata": "dev-master",
     "ruflin/elastica": "^6.0"
   },
   "require-dev": {

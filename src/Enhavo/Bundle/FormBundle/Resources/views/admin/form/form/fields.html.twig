@@ -223,6 +223,10 @@
     </div>
 {% endmacro %}
 
+{% block entity_label %}
+    {{ block('form_label') }}{% if multiple is defined and count is defined and multiple and count %}&nbsp;<span data-selected-count>({{ data|length }})</span>{% endif %}
+{% endblock %}
+
 {% block enhavo_auto_complete_entity_widget %}
     <div data-auto-complete-entity="{{ auto_complete_data|json_encode|e }}">
         {% set valueString = '' %}
@@ -236,10 +240,14 @@
             {% set valueString = value %}
         {% endif %}
         <input type="hidden" name="{{ full_name }}" value="{{ valueString }}" {% if multiple %}multiple="multiple"{% endif %} data-auto-complete-input />
-        {% if create_route %}
-            <a href="{{ path(create_route) }}" data-auto-complete-create class="autocomplete-create-button btn has-symbol">{% if create_button_label %}{{ create_button_label|trans({}, translation_domain) }}{% endif %}</a>
-        {% endif %}
+        {% for action in actions %}
+            <a href="{{ action.url }}" data-auto-complete-action="{{ action|json_encode|e }}" class="autocomplete-action-button btn has-symbol">{% if action.label %}{{ action.label }}{% endif %} <i aria-hidden="true" class="icon icon-{{action.icon}}"></i></a>
+        {% endfor %}
     </div>
+{% endblock %}
+
+{% block enhavo_auto_complete_entity_label %}
+    {{ block('entity_label') }}
 {% endblock %}
 
 {% block entity_tree_widget %}

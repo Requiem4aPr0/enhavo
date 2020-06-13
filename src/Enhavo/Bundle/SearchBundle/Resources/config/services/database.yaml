@@ -1,0 +1,14 @@
+services:
+    enhavo_search.engine.database_search_engine:
+        class: Enhavo\Bundle\SearchBundle\Engine\DatabaseSearch\DatabaseSearchEngine
+        public: true
+        arguments:
+            - '@enhavo_search.indexer.indexer'
+            - '@Enhavo\Component\Metadata\MetadataRepository[Search]'
+            - '@doctrine.orm.entity_manager'
+            - '@enhavo_search.extractor.extractor'
+            - '@enhavo_search.util.text_to_word'
+            - '@enhavo_search.util.text_simplify'
+            - '@Enhavo\Bundle\DoctrineExtensionBundle\EntityResolver\EntityResolverInterface'
+            - '@enhavo_search.filter.filter_data'
+            - '%enhavo_search.index.class%'

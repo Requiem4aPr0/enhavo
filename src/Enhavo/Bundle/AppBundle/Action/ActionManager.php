@@ -10,6 +10,7 @@ namespace Enhavo\Bundle\AppBundle\Action;
 
 use Enhavo\Bundle\AppBundle\Exception\TypeMissingException;
 use Enhavo\Bundle\AppBundle\Type\TypeCollector;
+use Sylius\Component\Resource\Model\ResourceInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ActionManager
@@ -38,24 +39,29 @@ class ActionManager
     public function createActionsViewData(array $configuration, $resource = null)
     {
         $data = [];
-        $actions = $this->getActions($configuration);
+        $actions = $this->getActions($configuration, $resource);
         foreach($actions as $action) {
             $data[] = $action->createViewData($resource);
         }
         return $data;
     }
 
-    public function getActions(array $configuration)
+    /**
+     * @param array $configuration
+     * @param ResourceInterface $resource
+     * @return Action[]
+     */
+    public function getActions(array $configuration, $resource = null)
     {
         $actions = [];
         foreach($configuration as $name => $options) {
             $action = $this->createAction($options);
 
-            if($action->isHidden()) {
+            if($action->isHidden($resource)) {
                 continue;
             }
 
-            if($action->getPermission() !== null && !$this->checker->isGranted($action->getPermission())) {
+            if($action->getPermission($resource) !== null && !$this->checker->isGranted($action->getPermission())) {
                 continue;
             }
 

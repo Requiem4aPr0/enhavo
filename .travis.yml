@@ -1,30 +1,31 @@
+dist: bionic
+
 language: php
 
 addons:
     chrome: stable
 
-dist: xenial
-
 php:
-  - 7.2
+    - 7.2
+    - 7.3
 
 services:
-  - mysql
+    - mysql
 
 env:
-  - ENVIRONMENT=test DEBUG=true
+    - ENVIRONMENT=test DEBUG=true
 
 before_install:
     - composer self-update
     - if [[ ! -z "$GITHUB_OAUTH_TOKEN" ]]; then composer config -g github-oauth.github.com "$GITHUB_OAUTH_TOKEN" >/dev/null 2>&1; fi
     - export USE_ZEND_ALLOC=0
-    
-install:
-    - sudo apt-get install -y --force-yes php-mysql
-    - sudo apt-get install -y --force-yes npm
+    - sudo apt-get install -y php-mysql
+    - sudo apt-get install -y nodejs-dev node-gyp libssl1.0-dev npm
     - sudo npm install -g yarn
+install:
     - mysql -e 'create database enhavo_test'
     - composer install --no-interaction --optimize-autoloader --prefer-dist
+    - cd vendor/symfony/panther/chromedriver-bin && bash update.sh && cd ../../../..
 
 before_script:
     - bin/console cache:warmup --env=test --no-debug
@@ -39,7 +40,7 @@ before_script:
     - php -i | grep -v GITHUB_OAUTH_TOKEN
 
 script:
-  - composer validate
-  - bin/behat --strict
-  - ./phpunit --stop-on-failure
-  - vendor/bin/phplint
+    - composer validate
+    - bin/behat --strict
+    - bin/phpunit --stop-on-failure
+    - vendor/bin/phplint

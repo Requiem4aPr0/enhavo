@@ -1,0 +1,62 @@
+parameters:
+
+services:
+    Enhavo\Bundle\PageBundle\Form\Type\PageType:
+        arguments:
+            - '%enhavo_page.model.page.class%'
+        tags:
+            - { name: form.type, alias: enhavo_page_page }
+
+    enhavo_page.form.type.navigation_page_configuation:
+        class: Enhavo\Bundle\PageBundle\Form\Type\NavigationPageConfigurationType
+        tags:
+            - { name: form.type }
+
+    enhavo_page.form.type.page_choice:
+        class: Enhavo\Bundle\PageBundle\Form\Type\PageChoiceType
+        arguments:
+            - '%enhavo_page.model.page.class%'
+        tags:
+            - { name: form.type, alias: 'enhavo_page_page_choice' }
+
+    enhavo_page.twig.page_path_extension:
+        class: Enhavo\Bundle\PageBundle\Twig\PagePathExtension
+        arguments:
+            - '@enhavo_page.repository.page'
+            - '@router'
+        tags:
+            - { name: twig.extension }
+
+    Enhavo\Bundle\PageBundle\Menu\PageMenu:
+        parent: Enhavo\Bundle\AppBundle\Menu\Menu\BaseMenu
+        tags:
+            - { name: enhavo.menu, alias: page }
+
+    enhavo_page.factory.page:
+        public: true
+        class: '%enhavo_page.factory.page.class%'
+        arguments:
+            - '%enhavo_page.model.page.class%'
+            - '@enhavo_block.factory.node'
+            - '@enhavo_routing.factory.route'
+
+    Enhavo\Bundle\PageBundle\Navigation\PageConfiguration:
+        public: true
+        calls:
+            - ['setContainer', ['@service_container']]
+        tags:
+            - { name: enhavo_navigation.item, alias: 'page' }
+
+    Enhavo\Bundle\PageBundle\Navigation\Voter\PageVoter:
+        public: true
+        arguments:
+            - '@request_stack'
+        tags:
+            - { name: enhavo_navigation.voter, alias: 'page' }
+
+    Enhavo\Bundle\PageBundle\Navigation\Voter\PageHierarchyVoter:
+        public: true
+        arguments:
+            - '@request_stack'
+        tags:
+            - { name: enhavo_navigation.voter, alias: 'page_hierarchy' }

@@ -19,21 +19,23 @@ interface ActionTypeInterface extends TypeInterface
      *
      * @param $options array
      * @param $resource object|null
-     * @return string
+     * @return array
      */
     public function createViewData(array $options, $resource = null);
 
     /**
      * @param array $options
-     * @return string
+     * @param object $resource
+     * @return mixed
      */
-    public function getPermission(array $options);
+    public function getPermission(array $options, $resource = null);
 
     /**
      * @param array $options
+     * @param object $resource
      * @return boolean
      */
-    public function isHidden(array $options);
+    public function isHidden(array $options, $resource = null);
 
     /**
      * @param $resolver OptionsResolver

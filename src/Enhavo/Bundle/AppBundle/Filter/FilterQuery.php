@@ -27,6 +27,9 @@ class FilterQuery
     const ORDER_ASC = 'asc';
     const ORDER_DESC = 'desc';
 
+    const HYDRATE_OBJECT = 'object';
+    const HYDRATE_ID = 'id';
+
     /**
      * @var array
      */
@@ -47,6 +50,11 @@ class FilterQuery
      */
     private $alias;
 
+    /**
+     * @var string
+     */
+    private $hydrate;
+
     public function __construct(EntityManagerInterface $em, $class, $alias = 'a')
     {
         if(strlen($alias) != 1) {
@@ -59,11 +67,12 @@ class FilterQuery
         $this->queryBuilder->from($class, $this->getAlias());
     }
 
-    public function addOrderBy($property, $order)
+    public function addOrderBy($property, $order, $joinProperty = null)
     {
         $this->orderBy[] = [
             'property' => $property,
-            'order' => $order
+            'order' => $order,
+            'joinProperty' => $joinProperty
         ];
 
         return $this;
@@ -169,8 +178,28 @@ class FilterQuery
             }
         }
 
-        foreach($this->getOrderBy() as $order) {
-            $query->addOrderBy(sprintf('%s.%s', $this->getAlias(), $order['property']), $order['order']);
+        $indexMin = count($this->getWhere());
+        foreach($this->getOrderBy() as $index => $order) {
+            $i++;
+            if($order['joinProperty']) {
+                if(is_array($order['joinProperty']) && count($order['joinProperty'])) {
+                    $joinPrefixes = $this->createJoinPropertyArray($indexMin + $index, count($order['joinProperty']) + 1);
+                    foreach($order['joinProperty'] as $joinProperty) {
+                        $joinPrefix = array_shift($joinPrefixes);
+                        $query->leftJoin(sprintf('%s.%s', $joinPrefix, $joinProperty), $joinPrefixes[0]);
+                    }
+                    $query->addOrderBy(sprintf('%s.%s', $joinPrefixes[0], $order['property']), $order['order']);
+                } else {
+                    $query->leftJoin(sprintf('%s.%s', $this->getAlias(), $order['property']), sprintf('j%s', $i));
+                    $query->addOrderBy(sprintf('j%s.%s', $i, $order['property']), $order['order']);
+                }
+            } else {
+                $query->addOrderBy(sprintf('%s.%s', $this->getAlias(), $order['property']), $order['order']);
+            }
+        }
+
+        if ($this->getHydrate() === self::HYDRATE_ID) {
+            $query->select($this->getAlias() . '.id');
         }
 
         return $this;
@@ -268,5 +297,21 @@ class FilterQuery
     public function getAlias()
     {
         return $this->alias;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHydrate(): string
+    {
+        return $this->hydrate;
+    }
+
+    /**
+     * @param string $hydrate
+     */
+    public function setHydrate(string $hydrate): void
+    {
+        $this->hydrate = $hydrate;
     }
 }

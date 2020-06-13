@@ -8,6 +8,7 @@
 
 namespace Enhavo\Bundle\AppBundle\Action;
 
+use Enhavo\Bundle\AppBundle\Util\ArrayUtil;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -34,7 +35,7 @@ abstract class AbstractUrlActionType extends AbstractActionType
     {
         $data = parent::createViewData($options);
 
-        $data = array_merge($data, [
+        $data = ArrayUtil::merge($data, [
             'url' => $this->getUrl($options, $resource)
         ]);
 
@@ -43,16 +44,15 @@ abstract class AbstractUrlActionType extends AbstractActionType
 
     protected function getUrl(array $options, $resource = null)
     {
-        if($resource) {
-            $parameters = [];
-            if(!isset($options['route_parameters']['id'])) {
-                $parameters['id'] = $resource->getId();
-            }
-            $parameters = array_merge_recursive($parameters, $options['route_parameters']);
-            return $this->router->generate($options['route'], $parameters);
+        $parameters = [];
+
+        if($options['append_id'] && $resource !== null && $resource->getId() !== null) {
+            $parameters[$options['append_key']] = $resource->getId();
         }
 
-        return $this->router->generate($options['route'], $options['route_parameters']);
+        $parameters = array_merge_recursive($parameters, $options['route_parameters']);
+
+        return $this->router->generate($options['route'], $parameters);
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -60,7 +60,9 @@ abstract class AbstractUrlActionType extends AbstractActionType
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
-            'route_parameters' => []
+            'route_parameters' => [],
+            'append_id' => false,
+            'append_key' => 'id'
         ]);
 
         $resolver->setRequired([

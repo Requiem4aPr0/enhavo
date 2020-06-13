@@ -1,5 +1,0 @@
-enhavo_app:
-    template_paths:
-        enhavo_search:
-            path: '@EnhavoSearchBundle/Resources/views'
-            priority: 10

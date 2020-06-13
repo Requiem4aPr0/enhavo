@@ -3,7 +3,6 @@
 return [
     Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
     FOS\RestBundle\FOSRestBundle::class => ['all' => true],
-    Symfony\Bundle\WebServerBundle\WebServerBundle::class => ['dev' => true],
     Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
     Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle::class => ['all' => true],
     Doctrine\Bundle\DoctrineCacheBundle\DoctrineCacheBundle::class => ['all' => true],
@@ -42,6 +41,7 @@ return [
     Enhavo\Bundle\ContentBundle\EnhavoContentBundle::class => ['all' => true],
     Enhavo\Bundle\ContactBundle\EnhavoContactBundle::class => ['all' => true],
     Enhavo\Bundle\CommentBundle\EnhavoCommentBundle::class => ['all' => true],
+    Enhavo\Bundle\DoctrineExtensionBundle\EnhavoDoctrineExtensionBundle::class => ['all' => true],
     Enhavo\Bundle\RoutingBundle\EnhavoRoutingBundle::class => ['all' => true],
     Enhavo\Bundle\NavigationBundle\EnhavoNavigationBundle::class => ['all' => true],
     Enhavo\Bundle\DemoBundle\EnhavoDemoBundle::class => ['all' => true],

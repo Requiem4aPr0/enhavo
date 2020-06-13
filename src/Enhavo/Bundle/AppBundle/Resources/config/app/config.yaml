@@ -1,0 +1,60 @@
+framework:
+    translator: { fallback: "%locale%" }
+    validation:
+        enabled: true
+    session:
+        cookie_lifetime: 25920000
+    templating:
+        engines: twig
+
+doctrine:
+    dbal:
+        mapping_types:
+            enum: string
+            json: string
+            json_array: string
+
+stof_doctrine_extensions:
+    default_locale: "%locale%"
+    orm:
+        default:
+            sluggable: true
+            timestampable: true
+
+sylius_resource:
+    authorization_checker: enhavo_app.security.default_authorization_checker
+
+jms_serializer:
+    metadata:
+        auto_detection: false
+
+enhavo_app:
+    locale: "%locale%"
+    template_paths:
+        default:
+            path: ''
+            priority: 150
+        enhavo_app:
+            path: '@EnhavoAppBundle/Resources/views'
+            priority: 10
+    toolbar_widget:
+        secondary:
+            user_menu:
+                type: quick_menu
+                icon: person
+                menu:
+                    logout:
+                        route: enhavo_user_security_logout
+                        label: label.logout
+                        translation_domain: EnhavoAppBundle
+                        target: _self
+                    change_password:
+                        route: enhavo_user_change_password_change
+                        label: label.change_password
+                        translation_domain: EnhavoAppBundle
+                        target: _view
+                    open_homepage:
+                        url: /
+                        label: label.open_homepage
+                        translation_domain: EnhavoAppBundle
+                        target: _blank

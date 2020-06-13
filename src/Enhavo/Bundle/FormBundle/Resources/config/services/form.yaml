@@ -1,0 +1,102 @@
+services:
+    enhavo_message:
+        class: Enhavo\Bundle\FormBundle\Form\Type\MessageType
+        tags:
+            - { name: form.type }
+        arguments:
+            - '@translator'
+
+    enhavo_list:
+        class: Enhavo\Bundle\FormBundle\Form\Type\ListType
+        tags:
+            - { name: form.type }
+
+    enhavo_date:
+        class: Enhavo\Bundle\FormBundle\Form\Type\DateType
+        arguments:
+            - '%enhavo_form.date_type.config%'
+        tags:
+            - { name: form.type }
+
+    enhavo_weekenddate:
+        class: Enhavo\Bundle\FormBundle\Form\Type\WeekendDateType
+        tags:
+            - { name: form.type }
+
+    enhavo_datetime:
+        class: Enhavo\Bundle\FormBundle\Form\Type\DateTimeType
+        arguments:
+            - '%enhavo_form.date_time_type.config%'
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Type\BooleanType:
+        arguments:
+            - '@translator'
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Type\PositionType:
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Type\WysiwygType:
+        arguments:
+            - '%enhavo_form.wysiwyg.editor_entrypoint%'
+            - '%enhavo_form.wysiwyg.editor_entrypoint_build%'
+            - '@Enhavo\Bundle\FormBundle\Form\Helper\EntrypointFileManager'
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Helper\EntrypointFileManager:
+        arguments:
+            - '@webpack_encore.entrypoint_lookup_collection'
+
+    Enhavo\Bundle\FormBundle\Form\Type\DynamicFormType:
+        calls:
+            - ['setContainer', ['@service_container']]
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Type\DynamicItemType:
+        calls:
+            - ['setContainer', ['@service_container']]
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Type\AutoCompleteEntityType:
+        arguments:
+            - '@router'
+            - '@doctrine.orm.entity_manager'
+            - '@property_accessor'
+            - '@enhavo_app.action_manager'
+        tags:
+            - { name: form.type, alias: 'enhavo_auto_complete_entity' }
+
+    Enhavo\Bundle\FormBundle\Form\Type\CurrencyType:
+        arguments:
+            - '@Enhavo\Bundle\FormBundle\Form\Transformer\CurrencyTransformer'
+        tags:
+            - { name: form.type }
+
+    Enhavo\Bundle\FormBundle\Form\Extension\ChoiceTypeExtension:
+        tags:
+            - { name: form.type_extension, extended_type: Symfony\Component\Form\Extension\Core\Type\ChoiceType }
+
+    Enhavo\Bundle\FormBundle\Form\Extension\EntityTypeExtension:
+        tags:
+            - { name: form.type_extension, extended_type: Symfony\Bridge\Doctrine\Form\Type\EntityType }
+
+    Enhavo\Bundle\FormBundle\Form\Extension\ConditionTypeExtension:
+        tags:
+            - { name: form.type_extension, extended_type: Symfony\Component\Form\Extension\Core\Type\FormType }
+
+    Enhavo\Bundle\FormBundle\Form\Extension\HelpExtension:
+        tags:
+            - { name: form.type_extension, extended_type: Symfony\Component\Form\Extension\Core\Type\FormType }
+
+
+    Enhavo\Bundle\FormBundle\Form\Transformer\CurrencyTransformer:
+        public: true
+        arguments:
+            - '@Enhavo\Bundle\FormBundle\Formatter\CurrencyFormatter'

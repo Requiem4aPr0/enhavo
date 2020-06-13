@@ -1,6 +1,6 @@
 {
   "name": "enhavo/comment-bundle",
-  "type": "library",
+  "type": "symfony-bundle",
   "description": "EnhavoCommentBundle",
   "keywords": ["framework"],
   "homepage": "https://enhavo.com",
@@ -14,7 +14,8 @@
   "require": {
     "php": "^7.2",
     "enhavo/app-bundle": "dev-master",
-    "enhavo/block-bundle": "dev-master"
+    "enhavo/block-bundle": "dev-master",
+    "enhavo/doctrine-extension-bundle": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.4"

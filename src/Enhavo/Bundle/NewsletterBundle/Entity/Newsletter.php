@@ -34,17 +34,17 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     private $content;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
     private $startAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
     private $finishAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
     private $createdAt;
 
@@ -68,6 +68,11 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
      */
     private $state = NewsletterInterface::STATE_CREATED;
 
+    /*
+     * Collection
+     */
+    private $attachments;
+
     /**
      * Constructor
      */
@@ -75,6 +80,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     {
         $this->receivers = new \Doctrine\Common\Collections\ArrayCollection();
         $this->groups = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->attachments = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -160,7 +166,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     /**
      * @return \DateTime
      */
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -168,7 +174,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     /**
      * @param \DateTime $createdAt
      */
-    public function setCreatedAt(\DateTime $createdAt): void
+    public function setCreatedAt(?\DateTime $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
@@ -176,7 +182,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     /**
      * @return \DateTime
      */
-    public function getStartAt(): \DateTime
+    public function getStartAt(): ?\DateTime
     {
         return $this->startAt;
     }
@@ -184,7 +190,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     /**
      * @param \DateTime $startAt
      */
-    public function setStartAt(\DateTime $startAt): void
+    public function setStartAt(?\DateTime $startAt): void
     {
         $this->startAt = $startAt;
     }
@@ -192,7 +198,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     /**
      * @return \DateTime
      */
-    public function getFinishAt(): \DateTime
+    public function getFinishAt(): ?\DateTime
     {
         return $this->finishAt;
     }
@@ -200,7 +206,7 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     /**
      * @param \DateTime $finishAt
      */
-    public function setFinishAt(\DateTime $finishAt): void
+    public function setFinishAt(?\DateTime $finishAt): void
     {
         $this->finishAt = $finishAt;
     }
@@ -277,6 +283,39 @@ class Newsletter implements ResourceInterface, Slugable, NewsletterInterface
     public function getReceivers()
     {
         return $this->receivers;
+    }
+
+    /**
+     * Add attachments
+     *
+     * @param \Enhavo\Bundle\MediaBundle\Entity\File $attachments
+     * @return Newsletter
+     */
+    public function addAttachment($attachments)
+    {
+        $this->attachments[] = $attachments;
+
+        return $this;
+    }
+
+    /**
+     * Remove attachments
+     *
+     * @param \Enhavo\Bundle\MediaBundle\Entity\File $attachments
+     */
+    public function removeAttachment($attachments)
+    {
+        $this->attachments->removeElement($attachments);
+    }
+
+    /**
+     * Get attachments
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
     }
 
     /**

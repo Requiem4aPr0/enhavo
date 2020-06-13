@@ -1,0 +1,13 @@
+enhavo_app:
+    template_paths:
+        enhavo_search:
+            path: '@EnhavoSearchBundle/Resources/views'
+            priority: 10
+
+enhavo_doctrine_extension:
+    metadata:
+        Enhavo\Bundle\SearchBundle\Model\Database\DataSet:
+            reference:
+                content:
+                    idField: contentId
+                    nameField: contentClass

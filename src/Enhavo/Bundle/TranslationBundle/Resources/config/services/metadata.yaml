@@ -1,0 +1,20 @@
+services:
+    Enhavo\Component\Metadata\MetadataRepository[Translation]:
+        class: Enhavo\Component\Metadata\MetadataRepository
+        arguments:
+            - '@Enhavo\Component\Metadata\MetadataFactory[Translation]'
+
+    Enhavo\Component\Metadata\MetadataFactory[Translation]:
+        class: Enhavo\Component\Metadata\MetadataFactory
+        arguments:
+            - 'Enhavo\Bundle\TranslationBundle\Metadata\Metadata'
+        calls:
+            - [addDriver, ['@Enhavo\Component\Metadata\Driver\ConfigurationDriver[Translation]']]
+            - [addProvider, ['@Enhavo\Bundle\TranslationBundle\Metadata\Provider\PropertyNodeProvider']]
+
+    Enhavo\Component\Metadata\Driver\ConfigurationDriver[Translation]:
+        class: Enhavo\Component\Metadata\Driver\ConfigurationDriver
+        arguments:
+            - '%enhavo_translation.metadata%'
+
+    Enhavo\Bundle\TranslationBundle\Metadata\Provider\PropertyNodeProvider:

@@ -4,15 +4,17 @@ namespace Enhavo\Bundle\ContactBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * This is the class that loads and manages your bundle configuration
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class EnhavoContactExtension extends Extension
+class EnhavoContactExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * {@inheritdoc}
@@ -30,6 +32,8 @@ class EnhavoContactExtension extends Extension
                 $container->setParameter(sprintf('enhavo_contact.%s.template.recipient', $name), $form['template']['recipient']);
                 $container->setParameter(sprintf('enhavo_contact.%s.template.confirm', $name), $form['template']['confirm']);
                 $container->setParameter(sprintf('enhavo_contact.%s.template.page', $name), $form['template']['page']);
+                $container->setParameter(sprintf('enhavo_contact.%s.message.success', $name), $form['message']['success']);
+                $container->setParameter(sprintf('enhavo_contact.%s.message.invalid', $name), $form['message']['invalid']);
                 $container->setParameter(sprintf('enhavo_contact.%s.recipient', $name), $form['recipient']);
                 $container->setParameter(sprintf('enhavo_contact.%s.from', $name), $form['from']);
                 $container->setParameter(sprintf('enhavo_contact.%s.sender_name', $name), $form['sender_name']);
@@ -41,6 +45,19 @@ class EnhavoContactExtension extends Extension
         }
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.yml');
+        $loader->load('services.yaml');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function prepend(ContainerBuilder $container)
+    {
+        $configs = Yaml::parse(file_get_contents(__DIR__.'/../Resources/config/app/config.yaml'));
+        foreach($configs as $name => $config) {
+            if (is_array($config)) {
+                $container->prependExtensionConfig($name, $config);
+            }
+        }
     }
 }

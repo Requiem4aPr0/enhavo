@@ -1,0 +1,26 @@
+services:
+    Enhavo\Bundle\RoutingBundle\Manager\RouteManager:
+        public: true
+        arguments:
+            - '@enhavo_routing.auto_generator'
+
+    enhavo_routing.listener.routeable_listener:
+        class: Enhavo\Bundle\RoutingBundle\EventListener\RouteableListener
+        arguments:
+            - '@Enhavo\Bundle\RoutingBundle\Manager\RouteManager'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    Enhavo\Bundle\RoutingBundle\Twig\RouterExtension:
+        arguments:
+            - '@enhavo_routing.router'
+        tags:
+            - { name: twig.extension }
+
+    Enhavo\Bundle\RoutingBundle\Twig\UrlBeautifierExtension:
+        tags:
+            - { name: twig.extension }
+
+    Enhavo\Bundle\RoutingBundle\Twig\SlugifyExtension:
+        tags:
+            - { name: twig.extension }
